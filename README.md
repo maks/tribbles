@@ -1,5 +1,7 @@
 A library for Dart working with large numbers of Dart Isolates.
 
+# WIP! NO YET READY FOR USE!
+
 ## Usage
 
 A simple usage example:
