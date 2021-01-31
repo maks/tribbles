@@ -1,6 +1,6 @@
 import 'package:tribbles/tribbles.dart';
 
 void main() {
-  var awesome = Awesome();
-  print('awesome: ${awesome.isAwesome}');
+  final tribble = Tribble();
+  print('created your first tribble ${tribble}');
 }

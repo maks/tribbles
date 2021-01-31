@@ -2,15 +2,12 @@ import 'package:tribbles/tribbles.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('A group of tests', () {
-    Awesome awesome;
+  group('creating tribbles', () {
+    test('creating tribble increases tribble count', () {
+      // ignore: unused_local_variable
+      final tribble = Tribble();
 
-    setUp(() {
-      awesome = Awesome();
-    });
-
-    test('First Test', () {
-      expect(awesome.isAwesome, isTrue);
+      expect(Tribble.count, equals(1));
     });
   });
 }

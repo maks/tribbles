@@ -1,7 +1,4 @@
-A library for Dart developers.
-
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+A library for Dart working with large numbers of Dart Isolates.
 
 ## Usage
 
@@ -11,7 +8,7 @@ A simple usage example:
 import 'package:tribbles/tribbles.dart';
 
 main() {
-  var awesome = new Awesome();
+  final tribble = Tribble();
 }
 ```
 
@@ -19,4 +16,4 @@ main() {
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: http://example.com/issues/replaceme
+[tracker]: https://github.com/maks/tribbles/issues/new

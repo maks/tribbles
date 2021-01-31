@@ -1,6 +1,10 @@
-// TODO: Put public facing types in this file.
+/// Create a new tribble
+class Tribble {
+  static final List<Tribble> _tribbles = [];
 
-/// Checks if you are awesome. Spoiler: you are.
-class Awesome {
-  bool get isAwesome => true;
+  static int get count => _tribbles.length;
+
+  Tribble() {
+    _tribbles.add(this);
+  }
 }
