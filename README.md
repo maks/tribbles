@@ -1,4 +1,4 @@
-A library for Dart working with large numbers of Dart Isolates.
+A Dart library for working with large numbers of Isolates.
 
 # WIP! NO YET READY FOR USE!
 
