@@ -1,8 +1,8 @@
-/// Support for doing something awesome.
+/// Tibbles wraps the Isolate API to try to make it easier
+/// to manage large numbers of Isolates and communication
+/// between them.
 ///
-/// More dartdocs go here.
+///
 library tribbles;
 
 export 'src/tribbles_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
