@@ -10,12 +10,12 @@ void main() {
   group('creating tribbles', () {
     test('creating tribble increases tribble count', () {
       // ignore: unused_local_variable
-      final tribble = Tribble();
+      final tribble = Tribble(dummy);
       expect(Tribble.count, equals(1));
     });
 
     test('killing a tribble decreases tribble count', () {
-      final tribble = Tribble();
+      final tribble = Tribble(dummy);
       expect(Tribble.count, equals(1));
 
       tribble.kill();
@@ -24,10 +24,10 @@ void main() {
     });
 
     test('killing a tribble marks it as no longer alive', () async {
-      final tribble = Tribble();
+      final tribble = Tribble(dummy);
 
       // yuck! but we want to test actual creation of isolates
-      // so allow for upto 250ms for a isoolate to be created
+      // so allow for upto 250ms for a isolate to be created
       var count = 0;
       while (!tribble.alive && count < 10) {
         await Future.delayed(Duration(milliseconds: 25));
@@ -41,3 +41,5 @@ void main() {
     });
   });
 }
+
+void dummy(_) {}

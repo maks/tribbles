@@ -13,9 +13,12 @@ class Tribble {
   static int get count => _tribbles.length;
 
   /// Create a new tribble
-  Tribble() {
-    Isolate.spawn(_isolateHandler, _responses.sendPort)
-        .then((i) => _isolate = i);
+  Tribble(worker) {
+    Isolate.spawn(
+      worker,
+      _responses.sendPort,
+    ).then((i) => _isolate = i);
+
     _tribbles.add(this);
   }
 
@@ -32,8 +35,4 @@ class Tribble {
       t._isolate?.kill();
     }
   }
-}
-
-void _isolateHandler(SendPort responsePort) {
-  //TODO: use responsePort to send requestPort
 }
