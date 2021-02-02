@@ -1,8 +1,9 @@
+import 'package:tribbles/src/tribbles_base.dart';
 import 'package:tribbles/tribbles.dart';
 import 'package:test/test.dart';
 
 void main() {
-  setUp(() {
+  setUp(() async {
     Tribble.killAll();
   });
 
@@ -10,7 +11,6 @@ void main() {
     test('creating tribble increases tribble count', () {
       // ignore: unused_local_variable
       final tribble = Tribble();
-
       expect(Tribble.count, equals(1));
     });
 
@@ -23,8 +23,16 @@ void main() {
       expect(Tribble.count, equals(0));
     });
 
-    test('killing a tribble marks it as an not alive', () {
+    test('killing a tribble marks it as no longer alive', () async {
       final tribble = Tribble();
+
+      // yuck! but we want to test actual creation of isolates
+      // so allow for upto 250ms for a isoolate to be created
+      var count = 0;
+      while (!tribble.alive && count < 10) {
+        await Future.delayed(Duration(milliseconds: 25));
+        count++;
+      }
       expect(tribble.alive, isTrue);
 
       tribble.kill();
