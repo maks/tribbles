@@ -1,13 +1,11 @@
 name: tribbles
 description: A Dart library to assist working with large numbers of Isolates.
-version: 0.0.1-nullsafety.1
+version: 0.0.2-nullsafety.1
 homepage: https://github.com/maks/tribbles
 
 environment:
   sdk: ">=2.12.0-133.2.beta <3.0.0"
 
-#dependencies:
-#  path: ^1.7.0
 dev_dependencies:
   fake_async: ^1.2.0-nullsafety.3
   pedantic: ^1.10.0-nullsafety.3
