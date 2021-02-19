@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:isolate';
 
 /// Callback function that a tribble will invoke in a new Isolate.
@@ -12,18 +13,24 @@ typedef TribbleCallback = void Function(Map<String, dynamic>);
 
 /// Each Tribble represents a single Isolate.
 class Tribble {
-  static final List<Tribble> _tribbles = [];
+  static final Map<int, Tribble> _tribbles = HashMap();
 
   static const _portKey = 'port';
   static const _paramsKey = 'params';
 
+  static var _idCounter = 0;
+
   /// Total number of currently running tribbles
   static int get count => _tribbles.length;
+
+  /// Retrieve Tribble with Id if it exists
+  static Tribble? byId(int id) => _tribbles[id];
 
   Isolate? _isolate;
   final ReceivePort _responses = ReceivePort();
   SendPort? _requests;
   bool _ready = false;
+  final int id = _idCounter++;
 
   Future<bool> get alive async {
     while (!_ready) {
@@ -57,7 +64,7 @@ class Tribble {
       }
     });
 
-    _tribbles.add(this);
+    _tribbles.putIfAbsent(id, () => this);
   }
 
   bool sendMessage(String message) {
@@ -74,11 +81,11 @@ class Tribble {
   void kill() {
     _isolate?.kill();
     _isolate = null;
-    _tribbles.remove(this);
+    _tribbles.remove(id);
   }
 
   static void killAll() {
-    final old = List.from(_tribbles);
+    final old = List.from(_tribbles.values);
     _tribbles.clear();
     for (final t in old) {
       t._isolate?.kill();

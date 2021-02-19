@@ -1,7 +1,5 @@
 A Dart library for working with large numbers of Isolates.
 
-# WIP! NO YET READY FOR USE!
-
 ## Usage
 
 A simple usage example:
@@ -9,10 +7,16 @@ A simple usage example:
 ```dart
 import 'package:tribbles/tribbles.dart';
 
+void hi(String mesg) {
+  print('tribble says: $mesg');
+}
+
 main() {
-  final tribble = Tribble();
+  final tribble = Tribble(hi);
 }
 ```
+
+See the [sample code](example/tribbles_example.dart) for a more completed example of using Tribble.
 
 ## Features and bugs
 

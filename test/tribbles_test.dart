@@ -57,6 +57,16 @@ void main() {
       }
       expect(reply, equals('test1'));
     });
+
+    test('no tribbles before first one is created', () async {
+      expect(Tribble.byId(0), equals(null));
+    });
+
+    test('get a tribble by id', () async {
+      final tribble = Tribble(dummy);
+
+      expect(Tribble.byId(tribble.id), equals(tribble));
+    });
   });
 }
 
