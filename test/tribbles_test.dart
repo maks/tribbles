@@ -25,21 +25,45 @@ void main() {
 
     test('killing a tribble marks it as no longer alive', () async {
       final tribble = Tribble(dummy);
-
-      // yuck! but we want to test actual creation of isolates
-      // so allow for upto 250ms for a isolate to be created
-      var count = 0;
-      while (!tribble.alive && count < 10) {
-        await Future.delayed(Duration(milliseconds: 25));
-        count++;
-      }
-      expect(tribble.alive, isTrue);
+      final ready = await tribble.alive;
+      expect(ready, isTrue);
 
       tribble.kill();
 
-      expect(tribble.alive, isFalse);
+      final alive = await tribble.alive;
+      expect(alive, isFalse);
+    });
+
+    test('send a tribble a message', () async {
+      final tribble = Tribble(echo);
+
+      final ready = await tribble.alive;
+      expect(ready, isTrue);
+
+      var reply = '';
+      tribble.messages.listen((mesg) {
+        reply = mesg;
+      });
+      final r = tribble.sendMessage('test1');
+      expect(r, isTrue);
+
+      // sadly can't use FakeAsync with & inside Isolates so
+      // just need this hacky way of waiting on Isolate to send
+      // to its output SendPort stream
+      var count = 0; // 250ms timeout
+      while (reply == '' && count < 50) {
+        await Future.delayed(Duration(milliseconds: 5));
+        count++;
+      }
+      expect(reply, equals('test1'));
     });
   });
 }
 
 void dummy(_) {}
+
+void echo(Map m) {
+  Tribble.connect(m).listen((message) {
+    Tribble.reply(m, message);
+  });
+}
