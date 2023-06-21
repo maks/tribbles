@@ -42,7 +42,7 @@ void main() {
 
       var reply = '';
       tribble.messages.listen((mesg) {
-        reply = mesg;
+        reply = mesg.toString();
       });
       final r = tribble.sendMessage('test1');
       expect(r, isTrue);
@@ -52,7 +52,7 @@ void main() {
       // to its output SendPort stream
       var count = 0; // 250ms timeout
       while (reply == '' && count < 50) {
-        await Future.delayed(Duration(milliseconds: 5));
+        await Future<void>.delayed(Duration(milliseconds: 5));
         count++;
       }
       expect(reply, equals('test1'));
@@ -72,8 +72,8 @@ void main() {
 
 void dummy(_) {}
 
-void echo(Map m) {
+void echo(Map<dynamic, dynamic> m) {
   Tribble.connect(m).listen((message) {
-    Tribble.reply(m, message);
+    Tribble.reply(m, message.toString());
   });
 }
