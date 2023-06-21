@@ -34,17 +34,17 @@ class Tribble {
 
   Future<bool> get alive async {
     while (!_ready) {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future<void>.delayed(Duration(milliseconds: 100));
     }
     return _isolate != null;
   }
 
-  final _messageStream = StreamController();
+  final _messageStream = StreamController<String>();
 
-  Stream get messages => _messageStream.stream;
+  Stream<String> get messages => _messageStream.stream;
 
   /// Create a new tribble
-  Tribble(TribbleCallback worker, {Map parameters = const {}}) {
+  Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}}) {
     Isolate.spawn(
       worker,
       {
@@ -60,7 +60,7 @@ class Tribble {
       if (message is SendPort) {
         _requests = message;
       } else {
-        _messageStream.add(message);
+        _messageStream.add(message.toString());
       }
     });
 
@@ -85,20 +85,20 @@ class Tribble {
   }
 
   static void killAll() {
-    final old = List.from(_tribbles.values);
+    final old = _tribbles.values.toList();
     _tribbles.clear();
     for (final t in old) {
       t._isolate?.kill();
     }
   }
 
-  static ReceivePort connect(Map m) {
+  static ReceivePort connect(Map<dynamic, dynamic> m) {
     final requestPort = ReceivePort();
     m[_portKey].send(requestPort.sendPort);
     return requestPort;
   }
 
-  static void reply(Map m, String reply) {
+  static void reply(Map<dynamic, dynamic> m, String reply) {
     m[_portKey].send(reply);
   }
 }
