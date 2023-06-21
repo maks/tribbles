@@ -18,7 +18,7 @@ void main() async {
     print('[mesg from Tribble] $event');
   });
 
-  print('created your first tribble ${tribble}');
+  print('created your first tribble $tribble');
 
   // wait for tribble to be ready
   await tribble.alive;
