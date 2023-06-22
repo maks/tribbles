@@ -7,7 +7,7 @@ void hi(Map<dynamic, dynamic> m) {
   Tribble.connect(m).listen((message) {
     print('[Tribble received] $message');
 
-    Tribble.reply(m, 'I got your message!');
+    Tribble.reply(m, 'I got your message: $message');
   });
 }
 

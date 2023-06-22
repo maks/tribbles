@@ -39,9 +39,9 @@ class Tribble {
     return _isolate != null;
   }
 
-  final _messageStream = StreamController<String>();
+  final _messageStream = StreamController<dynamic>();
 
-  Stream<String> get messages => _messageStream.stream;
+  Stream<dynamic> get messages => _messageStream.stream;
 
   /// Create a new tribble
   Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}}) {
@@ -67,7 +67,10 @@ class Tribble {
     _tribbles.putIfAbsent(id, () => this);
   }
 
-  bool sendMessage(String message) {
+  /// Send a message to this Tribble that can be received by listening to the messages stream.
+  ///
+  /// returns false if the message could not be delivered to the tribble
+  bool sendMessage(dynamic message) {
     final requests = _requests;
     if (requests != null) {
       requests.send(message);
@@ -78,10 +81,18 @@ class Tribble {
     }
   }
 
+  /// Kill this Tribble
+  ///
+  /// Kills the associated Isolate and removes the Tribbles ID from the list of IDs
   void kill() {
     _isolate?.kill();
     _isolate = null;
     _tribbles.remove(id);
+  }
+
+  @override
+  String toString() {
+    return "Tribble [$id]";
   }
 
   static void killAll() {
