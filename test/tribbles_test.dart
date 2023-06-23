@@ -9,13 +9,12 @@ void main() {
 
   group('creating tribbles', () {
     test('creating tribble increases tribble count', () {
-      // ignore: unused_local_variable
-      final tribble = Tribble(dummy);
+      Tribble((_, __) {});
       expect(Tribble.count, equals(1));
     });
 
     test('killing a tribble decreases tribble count', () {
-      final tribble = Tribble(dummy);
+      final tribble = Tribble((_, __) {});
       expect(Tribble.count, equals(1));
 
       tribble.kill();
@@ -24,7 +23,7 @@ void main() {
     });
 
     test('killing a tribble marks it as no longer alive', () async {
-      final tribble = Tribble(dummy);
+      final tribble = Tribble((_, __) {});
       final ready = await tribble.alive;
       expect(ready, isTrue);
 
@@ -63,17 +62,15 @@ void main() {
     });
 
     test('get a tribble by id', () async {
-      final tribble = Tribble(dummy);
+      final tribble = Tribble((_, __) {});
 
       expect(Tribble.byId(tribble.id), equals(tribble));
     });
   });
 }
 
-void dummy(_) {}
-
-void echo(Map<dynamic, dynamic> m) {
-  Tribble.connect(m).listen((message) {
-    Tribble.reply(m, message.toString());
+void echo(ConnectFn connect, ReplyFn reply) {
+  connect().listen((message) {
+    reply(message.toString());
   });
 }

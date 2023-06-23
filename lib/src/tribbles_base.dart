@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:isolate';
+
+typedef ConnectFn = ReceivePort Function();
+typedef ReplyFn = void Function(dynamic);
 
 /// Callback function that a tribble will invoke in a new Isolate.
 /// The Map that will be passed in should be treated as Opaque!
@@ -9,28 +11,45 @@ import 'dart:isolate';
 /// with the map that was passed in if it wishes to receive future incoming messages.
 /// Likewise it can use the passed in map with the Tribble.reply() static function to
 /// send messages to any listeners of the tribbles 'messages' stream.
-typedef TribbleCallback = void Function(Map<String, dynamic>);
+typedef TribbleCallback = void Function(ConnectFn, ReplyFn);
+
+const _portKey = 'port';
+const _paramsKey = 'params';
+const _workerKey = 'worker';
+const _idKey = 'id';
+
+late final Map<dynamic, dynamic> _tribbleMap;
+
+void _workerWrapper(Map<dynamic, dynamic> m) {
+  _tribbleMap = m;
+  _worker = m[_workerKey] as TribbleCallback;
+  return _worker(connect, reply);
+}
+
+ReceivePort connect() {
+  final requestPort = ReceivePort();
+  _tribbleMap[_portKey].send(requestPort.sendPort);
+  return requestPort;
+}
+
+void reply(dynamic reply) {
+  _tribbleMap[_portKey].send(reply);
+}
+
+late final TribbleCallback _worker;
+
+int _idCounter = 0;
+
+int get _nextTribbleId => ++_idCounter;
 
 /// Each Tribble represents a single Isolate.
 class Tribble {
-  static final Map<int, Tribble> _tribbles = HashMap();
-
-  static const _portKey = 'port';
-  static const _paramsKey = 'params';
-
-  static var _idCounter = 0;
-
-  /// Total number of currently running tribbles
-  static int get count => _tribbles.length;
-
-  /// Retrieve Tribble with Id if it exists
-  static Tribble? byId(int id) => _tribbles[id];
-
   Isolate? _isolate;
   final ReceivePort _responses = ReceivePort();
   SendPort? _requests;
   bool _ready = false;
-  final int id = _idCounter++;
+
+  late final int id;
 
   Future<bool> get alive async {
     while (!_ready) {
@@ -43,13 +62,22 @@ class Tribble {
 
   Stream<dynamic> get messages => _messageStream.stream;
 
+  static final Map<int, Tribble> _children = {};
+
+  static int get count => _children.length;
+
+  static Tribble? byId(int id) => _children[id]; 
+
   /// Create a new tribble
   Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}}) {
+    id = _nextTribbleId;
     Isolate.spawn(
-      worker,
+      _workerWrapper,
       {
         _portKey: _responses.sendPort,
         _paramsKey: parameters,
+        _workerKey: worker,
+        _idKey: id,
       },
     ).then((i) {
       _isolate = i;
@@ -63,8 +91,7 @@ class Tribble {
         _messageStream.add(message.toString());
       }
     });
-
-    _tribbles.putIfAbsent(id, () => this);
+    _children[id] = this;
   }
 
   /// Send a message to this Tribble that can be received by listening to the messages stream.
@@ -82,12 +109,10 @@ class Tribble {
   }
 
   /// Kill this Tribble
-  ///
-  /// Kills the associated Isolate and removes the Tribbles ID from the list of IDs
   void kill() {
     _isolate?.kill();
     _isolate = null;
-    _tribbles.remove(id);
+    _children.remove(id);
   }
 
   @override
@@ -96,20 +121,9 @@ class Tribble {
   }
 
   static void killAll() {
-    final old = _tribbles.values.toList();
-    _tribbles.clear();
-    for (final t in old) {
-      t._isolate?.kill();
+    final old = _children.values.toList();
+    for (var t in old) {
+      t.kill();
     }
-  }
-
-  static ReceivePort connect(Map<dynamic, dynamic> m) {
-    final requestPort = ReceivePort();
-    m[_portKey].send(requestPort.sendPort);
-    return requestPort;
-  }
-
-  static void reply(Map<dynamic, dynamic> m, String reply) {
-    m[_portKey].send(reply);
   }
 }
