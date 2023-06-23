@@ -93,7 +93,6 @@ class Tribble {
       }
     });
     _children[id] = this;
-    print("added:$id");
   }
 
   /// Send a message to this Tribble that can be received by listening to the messages stream.
@@ -115,7 +114,6 @@ class Tribble {
     _isolate?.kill();
     _isolate = null;
     _children.remove(id);
-    print("removed:$id");
   }
 
   @override
