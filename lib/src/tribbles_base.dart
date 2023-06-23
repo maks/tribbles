@@ -13,6 +13,8 @@ typedef ReplyFn = void Function(dynamic);
 /// send messages to any listeners of the tribbles 'messages' stream.
 typedef TribbleCallback = void Function(ConnectFn, ReplyFn);
 
+typedef OnChildExitedCallback = void Function(String);
+
 const _portKey = 'port';
 const _paramsKey = 'params';
 const _workerKey = 'worker';
@@ -70,8 +72,18 @@ class Tribble {
   static Tribble? byId(String id) => _children[id]; 
 
   /// Create a new tribble
-  Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}}) {
+  Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}, OnChildExitedCallback? onChildExit}) {
     id = "$_isolateName/$_nextTribbleId";
+
+    final onExitPort = ReceivePort();
+
+    onExitPort.forEach((_) {
+      _children.remove(id);
+      if (onChildExit != null) {
+        onChildExit(id);
+      }
+    });
+
     Isolate.spawn(
       _workerWrapper,
       {
@@ -80,6 +92,7 @@ class Tribble {
         _workerKey: worker,
       },
       debugName: id,
+      onExit: onExitPort.sendPort,
     ).then((i) {
       _isolate = i;
       _ready = true;

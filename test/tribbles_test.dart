@@ -7,6 +7,7 @@ void main() {
     setUp(() async {
       Tribble.killAll();
     });
+
     test('creating tribble increases tribble count', () {
       Tribble((_, __) {});
       expect(Tribble.count, equals(1));
@@ -63,7 +64,29 @@ void main() {
     test('get a tribble by id', () async {
       final tribble = Tribble((_, __) {});
 
-      expect(Tribble.byId(tribble.id ?? ""), equals(tribble));
+      expect(Tribble.byId(tribble.id), equals(tribble));
+    });
+
+    test('get a tribble by id', () async {
+      final tribble = Tribble((_, __) {});
+
+      expect(Tribble.byId(tribble.id), equals(tribble));
+    });
+
+    test('notified ID of Tribble when a Tribble exits', () async {
+      String exitedId = "";
+      final tribble = Tribble(
+        (_, __) {},
+        onChildExit: (cid) {
+          exitedId = cid;
+        },
+      );
+
+      // wait until tribble is initialised
+      final ready = await tribble.alive;
+      expect(ready, isTrue);
+
+      expect(exitedId, tribble.id);
     });
   });
 }
