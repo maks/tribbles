@@ -16,23 +16,22 @@ typedef TribbleCallback = void Function(ConnectFn, ReplyFn);
 const _portKey = 'port';
 const _paramsKey = 'params';
 const _workerKey = 'worker';
-const _idKey = 'id';
 
 late final Map<dynamic, dynamic> _tribbleMap;
 
 void _workerWrapper(Map<dynamic, dynamic> m) {
   _tribbleMap = m;
   _worker = m[_workerKey] as TribbleCallback;
-  return _worker(connect, reply);
+  return _worker(_connect, _reply);
 }
 
-ReceivePort connect() {
+ReceivePort _connect() {
   final requestPort = ReceivePort();
   _tribbleMap[_portKey].send(requestPort.sendPort);
   return requestPort;
 }
 
-void reply(dynamic reply) {
+void _reply(dynamic reply) {
   _tribbleMap[_portKey].send(reply);
 }
 
@@ -42,14 +41,16 @@ int _idCounter = 0;
 
 int get _nextTribbleId => ++_idCounter;
 
+String? get _isolateName => Isolate.current.debugName;
+
 /// Each Tribble represents a single Isolate.
 class Tribble {
   Isolate? _isolate;
   final ReceivePort _responses = ReceivePort();
   SendPort? _requests;
   bool _ready = false;
-
-  late final int id;
+  // for now cache ID in the Tribble obj as well as setting it on the Tribbles underlying Isolate
+  late final String id;
 
   Future<bool> get alive async {
     while (!_ready) {
@@ -62,23 +63,23 @@ class Tribble {
 
   Stream<dynamic> get messages => _messageStream.stream;
 
-  static final Map<int, Tribble> _children = {};
+  static final Map<String, Tribble> _children = {};
 
   static int get count => _children.length;
 
-  static Tribble? byId(int id) => _children[id]; 
+  static Tribble? byId(String id) => _children[id]; 
 
   /// Create a new tribble
   Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}}) {
-    id = _nextTribbleId;
+    id = "$_isolateName/$_nextTribbleId";
     Isolate.spawn(
       _workerWrapper,
       {
         _portKey: _responses.sendPort,
         _paramsKey: parameters,
         _workerKey: worker,
-        _idKey: id,
       },
+      debugName: id,
     ).then((i) {
       _isolate = i;
       _ready = true;
@@ -92,6 +93,7 @@ class Tribble {
       }
     });
     _children[id] = this;
+    print("added:$id");
   }
 
   /// Send a message to this Tribble that can be received by listening to the messages stream.
@@ -113,6 +115,7 @@ class Tribble {
     _isolate?.kill();
     _isolate = null;
     _children.remove(id);
+    print("removed:$id");
   }
 
   @override

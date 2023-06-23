@@ -3,11 +3,10 @@ import 'package:tribbles/tribbles.dart';
 import 'package:test/test.dart';
 
 void main() {
-  setUp(() async {
-    Tribble.killAll();
-  });
-
   group('creating tribbles', () {
+    setUp(() async {
+      Tribble.killAll();
+    });
     test('creating tribble increases tribble count', () {
       Tribble((_, __) {});
       expect(Tribble.count, equals(1));
@@ -58,13 +57,13 @@ void main() {
     });
 
     test('no tribbles before first one is created', () async {
-      expect(Tribble.byId(0), equals(null));
+      expect(Tribble.byId(""), equals(null));
     });
 
     test('get a tribble by id', () async {
       final tribble = Tribble((_, __) {});
 
-      expect(Tribble.byId(tribble.id), equals(tribble));
+      expect(Tribble.byId(tribble.id ?? ""), equals(tribble));
     });
   });
 }
