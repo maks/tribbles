@@ -3,19 +3,18 @@ import 'package:tribbles/tribbles.dart';
 import 'package:test/test.dart';
 
 void main() {
-  setUp(() async {
-    Tribble.killAll();
-  });
-
   group('creating tribbles', () {
+    setUp(() async {
+      Tribble.killAll();
+    });
+
     test('creating tribble increases tribble count', () {
-      // ignore: unused_local_variable
-      final tribble = Tribble(dummy);
+      Tribble((_, __) {});
       expect(Tribble.count, equals(1));
     });
 
     test('killing a tribble decreases tribble count', () {
-      final tribble = Tribble(dummy);
+      final tribble = Tribble((_, __) {});
       expect(Tribble.count, equals(1));
 
       tribble.kill();
@@ -24,7 +23,7 @@ void main() {
     });
 
     test('killing a tribble marks it as no longer alive', () async {
-      final tribble = Tribble(dummy);
+      final tribble = Tribble((_, __) {});
       final ready = await tribble.alive;
       expect(ready, isTrue);
 
@@ -59,21 +58,41 @@ void main() {
     });
 
     test('no tribbles before first one is created', () async {
-      expect(Tribble.byId(0), equals(null));
+      expect(Tribble.byId(""), equals(null));
     });
 
     test('get a tribble by id', () async {
-      final tribble = Tribble(dummy);
+      final tribble = Tribble((_, __) {});
 
       expect(Tribble.byId(tribble.id), equals(tribble));
+    });
+
+    test('get a tribble by id', () async {
+      final tribble = Tribble((_, __) {});
+
+      expect(Tribble.byId(tribble.id), equals(tribble));
+    });
+
+    test('notified ID of Tribble when a Tribble exits', () async {
+      String exitedId = "";
+      final tribble = Tribble(
+        (_, __) {},
+        onChildExit: (cid) {
+          exitedId = cid;
+        },
+      );
+
+      // wait until tribble is initialised
+      final ready = await tribble.alive;
+      expect(ready, isTrue);
+
+      expect(exitedId, tribble.id);
     });
   });
 }
 
-void dummy(_) {}
-
-void echo(Map<dynamic, dynamic> m) {
-  Tribble.connect(m).listen((message) {
-    Tribble.reply(m, message.toString());
+void echo(ConnectFn connect, ReplyFn reply) {
+  connect().listen((message) {
+    reply(message.toString());
   });
 }

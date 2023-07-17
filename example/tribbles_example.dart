@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:tribbles/tribbles.dart';
 
-void hi(Map<dynamic, dynamic> m) {
+void hi(ConnectFn connect, ReplyFn reply) {
   print('hi from Tribble worker');
-  Tribble.connect(m).listen((message) {
+  connect().listen((message) {
     print('[Tribble received] $message');
 
-    Tribble.reply(m, 'I got your message!');
+    reply('I got your message: $message');
   });
 }
 
