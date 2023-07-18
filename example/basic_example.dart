@@ -26,6 +26,6 @@ void main() async {
   tribble.sendMessage('do something tribble');
   await Future<void>.delayed(Duration(milliseconds: 50));
   print('good bye tribble');
-  tribble.kill();
+  tribble.stop();
   exit(0);
 }

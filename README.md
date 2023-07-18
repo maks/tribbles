@@ -7,8 +7,12 @@ A simple usage example:
 ```dart
 import 'package:tribbles/tribbles.dart';
 
-void hi(String mesg) {
-  print('tribble says: $mesg');
+void hi(ConnectFn connect, ReplyFn reply) {
+  // you MUST always call connect() in the worker function you pass to a Tribble 
+  // otherwise the Tribble will not be fully initialised 
+  connect().listen((message) {
+    print('[Tribble received] $message');
+  });
 }
 
 main() {
