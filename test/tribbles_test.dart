@@ -80,8 +80,6 @@ void main() {
       tribble = Tribble(
         (connect, __) async {
           final reqPort = connect();
-          // need to give time to have Isolate shutdown and then notify
-          await Future<void>.delayed(Duration(milliseconds: 1));
           // once the worker completes we need to explicitly close the incoming requests ReceivePort to
           // shutdown this Tribble
           reqPort.close();
@@ -96,7 +94,7 @@ void main() {
       expect(tribble.alive, isTrue);
 
       //yuck, but need some way to give tribble time to stop and notify of being stopped
-      await Future<void>.delayed(Duration(milliseconds: 2));
+      await Future<void>.delayed(Duration(milliseconds: 20));
 
       expect(tribble.alive, isFalse);
 
