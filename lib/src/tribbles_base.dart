@@ -46,10 +46,8 @@ int get _nextTribbleId => ++_idCounter;
 
 String? get _isolateName => Isolate.current.debugName;
 
-
 /// Each Tribble represents a single Isolate.
 class Tribble {
-
   final ReceivePort _responses = ReceivePort();
   SendPort? _requests;
   // for now cache ID in the Tribble obj as well as setting it on the Tribbles underlying Isolate
@@ -110,16 +108,17 @@ class Tribble {
   }
 
   /// Wait for the Tribble to be ready.
-  /// Will time out after 10 seconds and throw an Exception if the Tribble is not ready within that time.
+  /// Will time out after timeOut in seconds (defaults to 10) and throws an Exception
+  /// if the Tribble is not ready within that time.
   ///
   /// returns the number of 100 microsecond waits that were required for the Tribble to be ready.
-  Future<int> waitForReady() async {
+  Future<int> waitForReady({int? timeOut}) async {
     // wait for tribble to be ready
     int aliveWaitCount = 0;
     while (!alive) {
       await Future<void>.delayed(Duration(microseconds: 100));
       aliveWaitCount++;
-      const timeOutInSecIn100Microsec = 10 * 100 * 1000;
+      final timeOutInSecIn100Microsec = (timeOut ?? 10) * 100 * 1000;
       if (aliveWaitCount > timeOutInSecIn100Microsec) {
         //timeout after 10 sec
         throw Exception("timeout waiting for tribble to be ready");
