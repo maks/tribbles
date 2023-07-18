@@ -11,3 +11,6 @@ build/
 
 # Directory created by dartdoc
 doc/api/
+
+# Ignore binaries
+example/multi_example.exe

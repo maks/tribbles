@@ -50,15 +50,12 @@ class Tribble {
   Isolate? _isolate;
   final ReceivePort _responses = ReceivePort();
   SendPort? _requests;
-  bool _ready = false;
   // for now cache ID in the Tribble obj as well as setting it on the Tribbles underlying Isolate
   late final String id;
+  bool _listening = false;
 
-  Future<bool> get alive async {
-    while (!_ready) {
-      await Future<void>.delayed(Duration(milliseconds: 100));
-    }
-    return _isolate != null;
+  bool get alive {
+    return _isolate != null && _listening;
   }
 
   final _messageStream = StreamController<dynamic>();
@@ -67,9 +64,9 @@ class Tribble {
 
   static final Map<String, Tribble> _children = {};
 
-  static int get count => _children.length;
+  static int get tribbleCount => _children.length;
 
-  static Tribble? byId(String id) => _children[id]; 
+  static Tribble? byId(String id) => _children[id];
 
   /// Create a new tribble
   Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}, OnChildExitedCallback? onChildExit}) {
@@ -95,17 +92,36 @@ class Tribble {
       onExit: onExitPort.sendPort,
     ).then((i) {
       _isolate = i;
-      _ready = true;
     });
 
     _responses.listen((message) {
       if (message is SendPort) {
         _requests = message;
+        _listening = true;
       } else {
         _messageStream.add(message.toString());
       }
     });
     _children[id] = this;
+  }
+
+  /// Wait for the Tribble to be ready.
+  /// Will time out after 10 seconds and throw an Exception if the Tribble is not ready within that time.
+  ///
+  /// returns the number of 100 microsecond waits that were required for the Tribble to be ready.
+  Future<int> waitForReady() async {
+    // wait for tribble to be ready
+    int aliveWaitCount = 0;
+    while (!alive) {
+      await Future<void>.delayed(Duration(microseconds: 100));
+      aliveWaitCount++;
+      const timeOutInSecIn100Microsec = 10 * 1000 * 100;
+      if (aliveWaitCount > timeOutInSecIn100Microsec) {
+        //timeout after 10 sec
+        throw Exception("timeout waiting for tribble to be ready");
+      }
+    }
+    return aliveWaitCount;
   }
 
   /// Send a message to this Tribble that can be received by listening to the messages stream.

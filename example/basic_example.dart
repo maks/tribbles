@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:tribbles/tribbles.dart';
+import '../lib/tribbles.dart';
 
 void hi(ConnectFn connect, ReplyFn reply) {
   print('hi from Tribble worker');

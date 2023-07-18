@@ -10,16 +10,16 @@ void main() {
 
     test('creating tribble increases tribble count', () {
       Tribble((_, __) {});
-      expect(Tribble.count, equals(1));
+      expect(Tribble.tribbleCount, equals(1));
     });
 
     test('killing a tribble decreases tribble count', () {
       final tribble = Tribble((_, __) {});
-      expect(Tribble.count, equals(1));
+      expect(Tribble.tribbleCount, equals(1));
 
       tribble.kill();
 
-      expect(Tribble.count, equals(0));
+      expect(Tribble.tribbleCount, equals(0));
     });
 
     test('killing a tribble marks it as no longer alive', () async {
