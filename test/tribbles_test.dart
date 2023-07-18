@@ -80,6 +80,8 @@ void main() {
       tribble = Tribble(
         (connect, __) async {
           final reqPort = connect();
+          // wait to give time before closing down the tribbles Isolate
+          await Future<void>.delayed(Duration(milliseconds: 10));
           // once the worker completes we need to explicitly close the incoming requests ReceivePort to
           // shutdown this Tribble
           reqPort.close();
@@ -90,7 +92,7 @@ void main() {
       );
 
       // wait until tribble is initialised
-      await tribble.waitForReady(timeOut: 20);
+      await tribble.waitForReady();
       expect(tribble.alive, isTrue);
 
       //yuck, but need some way to give tribble time to stop and notify of being stopped
