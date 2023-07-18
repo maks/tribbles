@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import '../lib/tribbles.dart';
 
 void hi(ConnectFn connect, ReplyFn reply) {
