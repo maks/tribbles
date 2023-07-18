@@ -4,10 +4,13 @@ import '../lib/tribbles.dart';
 
 void hi(ConnectFn connect, ReplyFn reply) {
   print('hi from Tribble worker');
-  connect().listen((message) {
+  final reqPort = connect();
+  reqPort.listen((message) {
     print('[Tribble received] $message');
-
     reply('I got your message: $message');
+
+    // closing the port will complete this Tribble (and stop its Isolate)
+    reqPort.close();
   });
 }
 
@@ -21,11 +24,7 @@ void main() async {
   print('created your first tribble $tribble');
 
   // wait for tribble to be ready
-  await tribble.alive;
+  await tribble.waitForReady();
 
   tribble.sendMessage('do something tribble');
-  await Future<void>.delayed(Duration(milliseconds: 50));
-  print('good bye tribble');
-  tribble.stop();
-  exit(0);
 }

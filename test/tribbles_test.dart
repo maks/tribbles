@@ -1,5 +1,3 @@
-import 'dart:isolate';
-
 import 'package:fake_async/fake_async.dart';
 import 'package:tribbles/src/tribbles_base.dart';
 import 'package:tribbles/tribbles.dart';
@@ -79,15 +77,14 @@ void main() {
       String exitedId = "";
       late final Tribble tribble;
 
-      void done() => tribble.stop();
-
       tribble = Tribble(
         (connect, __) async {
-          connect();
-          // need to give time to have Isolate shutdown and then noti
+          final reqPort = connect();
+          // need to give time to have Isolate shutdown and then notify
           await Future<void>.delayed(Duration(milliseconds: 1));
-          // once the worker completes we need to explicitly shutdown this Isolate
-          done();
+          // once the worker completes we need to explicitly close the incoming requests ReceivePort to
+          // shutdown this Tribble
+          reqPort.close();
         },
         onChildExit: (cid) {
           exitedId = cid;

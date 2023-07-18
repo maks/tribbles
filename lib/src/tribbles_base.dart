@@ -27,6 +27,7 @@ void _workerWrapper(Map<dynamic, dynamic> m) {
   _worker(_connect, _reply);
 }
 
+/// Returns the ReceivePort for incoming messages to this Tribble
 ReceivePort _connect() {
   final requestPort = ReceivePort();
   _tribbleMap[_portKey].send(requestPort.sendPort);
