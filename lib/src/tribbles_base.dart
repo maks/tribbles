@@ -52,10 +52,9 @@ class Tribble {
   SendPort? _requests;
   // for now cache ID in the Tribble obj as well as setting it on the Tribbles underlying Isolate
   late final String id;
-  bool _listening = false;
 
   bool get alive {
-    return _isolate != null && _listening;
+    return _isolate != null && _requests != null;
   }
 
   final _messageStream = StreamController<dynamic>();
@@ -97,7 +96,6 @@ class Tribble {
     _responses.listen((message) {
       if (message is SendPort) {
         _requests = message;
-        _listening = true;
       } else {
         _messageStream.add(message.toString());
       }
