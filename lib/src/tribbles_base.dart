@@ -101,7 +101,7 @@ class Tribble {
       if (message is SendPort) {
         _requests = message;
       } else {
-        _messageStream.add(message.toString());
+        _messageStream.add(message);
       }
     });
     _children[id] = this;

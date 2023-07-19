@@ -103,6 +103,30 @@ void main() {
       expect(exitedId, tribble.id);
     });
   });
+
+  test('sending replies should be of the correct type', () async {
+    final tribble = Tribble((connect, reply) {
+      connect().listen((message) {
+        reply(42);
+      });
+    });
+
+    bool replyOk = false;
+
+    tribble.messages.listen((mesg) {
+      if (mesg == 42) {
+        replyOk = true;
+      }
+    });
+    await tribble.waitForReady();
+    tribble.sendMessage("");
+
+    // yuck, but need delay to return control to runloop for reply to
+    // be delivered on messages stream
+    await Future<void>.delayed(Duration(milliseconds: 1));
+
+    expect(replyOk, isTrue);
+  });
 }
 
 void echo(ConnectFn connect, ReplyFn reply) {
