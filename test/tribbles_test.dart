@@ -92,7 +92,7 @@ void main() {
       );
 
       // wait until tribble is initialised
-      await tribble.waitForReady();
+      await tribble.waitForReady(timeOut: 20);
       expect(tribble.alive, isTrue);
 
       //yuck, but need some way to give tribble time to stop and notify of being stopped
