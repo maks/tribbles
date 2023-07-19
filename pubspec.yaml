@@ -1,6 +1,6 @@
 name: tribbles
 description: A Dart library to assist working with large numbers of Isolates.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/maks/tribbles
 
 environment:
