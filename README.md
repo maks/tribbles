@@ -7,8 +7,12 @@ A simple usage example:
 ```dart
 import 'package:tribbles/tribbles.dart';
 
-void hi(String mesg) {
-  print('tribble says: $mesg');
+void hi(ConnectFn connect, ReplyFn reply) {
+  // you MUST always call connect() in the worker function you pass to a Tribble 
+  // otherwise the Tribble will not be fully initialised 
+  connect().listen((message) {
+    print('[Tribble received] $message');
+  });
 }
 
 main() {
@@ -16,7 +20,11 @@ main() {
 }
 ```
 
-See the [sample code](example/tribbles_example.dart) for a more completed example of using Tribble.
+See the [sample code](example/basic_example.dart) for a more completed example of using Tribble.
+
+
+A more complex example showing how to use large numbers of Tribbles [is also available](example/multi_example.dart).
+Note if you wish, you can compare performance (memory, clock time and cpu usage) of the multi Tribble example by compiling AOT to a executable using: `dart compile exe example/multi_example.dart`.  
 
 ## Features and bugs
 

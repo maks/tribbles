@@ -24,9 +24,10 @@ late final Map<dynamic, dynamic> _tribbleMap;
 void _workerWrapper(Map<dynamic, dynamic> m) {
   _tribbleMap = m;
   _worker = m[_workerKey] as TribbleCallback;
-  return _worker(_connect, _reply);
+  _worker(_connect, _reply);
 }
 
+/// Returns the ReceivePort for incoming messages to this Tribble
 ReceivePort _connect() {
   final requestPort = ReceivePort();
   _tribbleMap[_portKey].send(requestPort.sendPort);
@@ -47,18 +48,15 @@ String? get _isolateName => Isolate.current.debugName;
 
 /// Each Tribble represents a single Isolate.
 class Tribble {
-  Isolate? _isolate;
   final ReceivePort _responses = ReceivePort();
   SendPort? _requests;
-  bool _ready = false;
   // for now cache ID in the Tribble obj as well as setting it on the Tribbles underlying Isolate
   late final String id;
 
-  Future<bool> get alive async {
-    while (!_ready) {
-      await Future<void>.delayed(Duration(milliseconds: 100));
-    }
-    return _isolate != null;
+  Isolate? _isolate;
+
+  bool get alive {
+    return _isolate != null && _requests != null;
   }
 
   final _messageStream = StreamController<dynamic>();
@@ -67,11 +65,12 @@ class Tribble {
 
   static final Map<String, Tribble> _children = {};
 
-  static int get count => _children.length;
+  static int get tribbleCount => _children.length;
 
-  static Tribble? byId(String id) => _children[id]; 
+  static Tribble? byId(String id) => _children[id];
 
   /// Create a new tribble
+  /// the worker callback function **MUST** call the connect() function argument it is passed as the first parameter
   Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}, OnChildExitedCallback? onChildExit}) {
     id = "$_isolateName/$_nextTribbleId";
 
@@ -79,6 +78,7 @@ class Tribble {
 
     onExitPort.forEach((_) {
       _children.remove(id);
+      _isolate = null;
       if (onChildExit != null) {
         onChildExit(id);
       }
@@ -95,7 +95,6 @@ class Tribble {
       onExit: onExitPort.sendPort,
     ).then((i) {
       _isolate = i;
-      _ready = true;
     });
 
     _responses.listen((message) {
@@ -108,22 +107,40 @@ class Tribble {
     _children[id] = this;
   }
 
+  /// Wait for the Tribble to be ready.
+  /// Will time out after timeOut in seconds (defaults to 10) and throws an Exception
+  /// if the Tribble is not ready within that time.
+  ///
+  /// returns the number of 100 microsecond waits that were required for the Tribble to be ready.
+  Future<int> waitForReady({int? timeOut}) async {
+    // wait for tribble to be ready
+    int aliveWaitCount = 0;
+    while (!alive) {
+      await Future<void>.delayed(Duration(microseconds: 100));
+      aliveWaitCount++;
+      final timeOutInSecIn100Microsec = (timeOut ?? 10) * 100 * 1000;
+      if (aliveWaitCount > timeOutInSecIn100Microsec) {
+        //timeout after 10 sec
+        throw Exception("timeout waiting for tribble to be ready");
+      }
+    }
+    return aliveWaitCount;
+  }
+
   /// Send a message to this Tribble that can be received by listening to the messages stream.
   ///
-  /// returns false if the message could not be delivered to the tribble
-  bool sendMessage(dynamic message) {
+  /// throws an Exception if the message could not be delivered to the tribble
+  void sendMessage(dynamic message) {
     final requests = _requests;
     if (requests != null) {
       requests.send(message);
-      return true;
     } else {
-      // cannot send message to isolate
-      return false;
+      throw Exception("cannot send messages to Tribble");
     }
   }
 
   /// Kill this Tribble
-  void kill() {
+  void stop() {
     _isolate?.kill();
     _isolate = null;
     _children.remove(id);
@@ -134,10 +151,10 @@ class Tribble {
     return "Tribble [$id]";
   }
 
-  static void killAll() {
+  static void stopAll() {
     final old = _children.values.toList();
     for (var t in old) {
-      t.kill();
+      t.stop();
     }
   }
 }
