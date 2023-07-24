@@ -1,3 +1,6 @@
+## 1.1.0
+- static API for tribble ID in current Isolate
+
 ## 1.0.1
 - fix incorrectly stringifying message stream items
 
