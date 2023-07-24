@@ -69,6 +69,8 @@ class Tribble {
 
   static Tribble? byId(String id) => _children[id];
 
+  static String? get currentId => Isolate.current.debugName;
+
   /// Create a new tribble
   /// the worker callback function **MUST** call the connect() function argument it is passed as the first parameter
   Tribble(TribbleCallback worker, {Map<dynamic, dynamic> parameters = const {}, OnChildExitedCallback? onChildExit}) {
