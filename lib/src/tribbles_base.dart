@@ -59,7 +59,7 @@ class Tribble {
     return _isolate != null && _requests != null;
   }
 
-  final _messageStream = StreamController<dynamic>();
+  final _messageStream = StreamController<dynamic>.broadcast();
 
   Stream<dynamic> get messages => _messageStream.stream;
 
